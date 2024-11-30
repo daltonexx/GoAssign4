@@ -1,0 +1,44 @@
+Vector Size: 10000
+  Processors: 2
+    Sequential Time: 0.00s, Parallel Time: 0.00s, Speedup: 1.05
+  Processors: 4
+    Sequential Time: 0.00s, Parallel Time: 0.00s, Speedup: 4.20
+  Processors: 8
+    Sequential Time: 0.00s, Parallel Time: 0.01s, Speedup: 0.08
+  Processors: 10
+    Sequential Time: 0.00s, Parallel Time: 0.01s, Speedup: 0.18
+  Processors: 12
+    Sequential Time: 0.00s, Parallel Time: 0.01s, Speedup: 0.20
+Vector Size: 100000
+  Processors: 2
+    Sequential Time: 0.02s, Parallel Time: 0.01s, Speedup: 1.61
+  Processors: 4
+    Sequential Time: 0.02s, Parallel Time: 0.01s, Speedup: 2.18
+  Processors: 8
+    Sequential Time: 0.02s, Parallel Time: 0.09s, Speedup: 0.18
+  Processors: 10
+    Sequential Time: 0.02s, Parallel Time: 0.08s, Speedup: 0.27
+  Processors: 12
+    Sequential Time: 0.02s, Parallel Time: 0.08s, Speedup: 0.20
+Vector Size: 1000000
+  Processors: 2
+    Sequential Time: 0.17s, Parallel Time: 0.10s, Speedup: 1.66
+  Processors: 4
+    Sequential Time: 0.17s, Parallel Time: 0.07s, Speedup: 2.45
+  Processors: 8
+    Sequential Time: 0.18s, Parallel Time: 0.16s, Speedup: 1.12
+  Processors: 10
+    Sequential Time: 0.19s, Parallel Time: 1.59s, Speedup: 0.12
+  Processors: 12
+    Sequential Time: 0.20s, Parallel Time: 1.04s, Speedup: 0.20
+Vector Size: 10000000
+  Processors: 2
+    Sequential Time: 1.82s, Parallel Time: 1.20s, Speedup: 1.52
+  Processors: 4
+    Sequential Time: 1.78s, Parallel Time: 0.84s, Speedup: 2.12
+  Processors: 8
+    Sequential Time: 1.76s, Parallel Time: 0.83s, Speedup: 2.12
+  Processors: 10
+    Sequential Time: 1.79s, Parallel Time: 2.08s, Speedup: 0.86
+  Processors: 12
+    Sequential Time: 1.78s, Parallel Time: 74.02s, Speedup: 0.02
