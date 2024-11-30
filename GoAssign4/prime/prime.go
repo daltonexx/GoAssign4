@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-	// Configurações
-	casas := [6]int{999, 999999, 999999999, 999999999999, 999999999999999, 999999999999999999}
+	// Configurações	
+	casas := [5]int{1000, 10000, 100000, 1000000, 10000000}
 	N := 50 // Número de primos a gerar
 	processadores := []int{2, 4, 6, 8, 10, 12}
 
@@ -44,7 +44,9 @@ func medirTempoSequencial(N, tam int) time.Duration {
 	for i := 0; i < N; i++ {
 		genPrime(tam)
 	}
-	return time.Since(start)
+	sequencial := time.Since(start)
+	fmt.Printf("Tempo sequencial para %d primos e tamanho %d: %v\n", N, tam, sequencial)
+	return sequencial
 }
 
 // Medir tempo na execução paralela
@@ -72,7 +74,9 @@ func medirTempoParalelo(N, tam, P int) time.Duration {
 
 	// Aguarda conclusão
 	wg.Wait()
-	return time.Since(start)
+	paralelo := time.Since(start)
+	fmt.Printf("Tempo paralelo para %d primos, %d processadores e tamanho %d: %v\n", N, P, tam, paralelo)
+	return paralelo
 }
 
 // Função que gera um número primo

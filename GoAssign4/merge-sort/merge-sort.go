@@ -102,24 +102,25 @@ func main() {
 		sequentialTime /= time.Duration(iterations) // Média do tempo sequencial
 
 		// Testar para diferentes números de processadores
-		for nProc := 1; nProc <= 8; nProc++ {
-			var parallelTime time.Duration
-			for i := 0; i < iterations; i++ {
-				start := time.Now()
-				_ = mergeSortParallel(arr, nProc)
-				parallelTime += time.Since(start)
-			}
-			parallelTime /= time.Duration(iterations) // Média do tempo paralelo
+		processors := []int{2, 4, 6, 8, 10, 12} // Processadores desejados
+			for _, nProc := range processors {
+    		var parallelTime time.Duration
+    			for i := 0; i < iterations; i++ {
+        			start := time.Now()
+        		_ = mergeSortParallel(arr, nProc)
+        		parallelTime += time.Since(start)
+    			}
+    		parallelTime /= time.Duration(iterations) // Média do tempo paralelo
 
-			// Verificar se o tempo paralelo não é muito pequeno
-			if parallelTime > 0 {
-				speedup := float64(sequentialTime) / float64(parallelTime)
-				// Printar os resultados
-				fmt.Printf("Tamanho: %d, Processadores: %d, Speedup: %.2f\n", size, nProc, speedup)
-			} else {
-				// Caso não tenha ocorrido paralelização eficaz, exibir uma mensagem
-				fmt.Printf("Tamanho: %d, Processadores: %d, Speedup: Não calculado\n", size, nProc)
-			}
-		}
+    	// Verificar se o tempo paralelo não é muito pequeno
+    	if parallelTime > 0 {
+     		speedup := float64(sequentialTime) / float64(parallelTime)
+        	// Printar os resultados
+        	fmt.Printf("Tamanho: %d, Processadores: %d, Speedup: %.2f\n", size, nProc, speedup)
+    	} else {
+        	// Caso não tenha ocorrido paralelização eficaz, exibir uma mensagem
+        	fmt.Printf("Tamanho: %d, Processadores: %d, Speedup: Não calculado\n", size, nProc)
+    }
+}
 	}
 }

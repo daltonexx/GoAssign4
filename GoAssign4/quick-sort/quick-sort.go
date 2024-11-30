@@ -97,8 +97,8 @@ func benchmark(vectorSize int, maxDepth int) (float64, float64, float64) {
 
 // avaliação de desempenho com diferentes tamanhos de vetor e número de processadores
 func evaluate() {
-	vectorSizes := []int{10_000, 100_000, 1_000_000, 10_000_000} // granularidade
-	numProcessors := []int{1, 2, 4, 8, 16}                       // num de processadores
+	vectorSizes := []int{1_000, 10_000, 100_000, 1_000_000, 10_000_000} // granularidade
+	numProcessors := []int{1, 2, 4,6, 8, 10, 12}                       // num de processadores
 
 	// executa o benchmark para cada tamanho de vetor e número de processadores
 	for _, size := range vectorSizes {
