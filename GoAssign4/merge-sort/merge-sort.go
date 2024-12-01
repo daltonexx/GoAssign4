@@ -3,27 +3,17 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"runtime"
 	"sync"
 	"time"
 )
 
-// Função de merge sort
-func mergeSort(arr []int) []int {
-	if len(arr) <= 1 {
-		return arr
-	}
-	mid := len(arr) / 2
-	left := mergeSort(arr[:mid])
-	right := mergeSort(arr[mid:])
-	return merge(left, right)
-}
-
-// Função para mesclar duas metades ordenadas
 func merge(left, right []int) []int {
-	result := []int{}
+	result := make([]int, 0, len(left)+len(right))
 	i, j := 0, 0
+
 	for i < len(left) && j < len(right) {
-		if left[i] < right[j] {
+		if left[i] <= right[j] {
 			result = append(result, left[i])
 			i++
 		} else {
@@ -31,96 +21,102 @@ func merge(left, right []int) []int {
 			j++
 		}
 	}
+
 	result = append(result, left[i:]...)
 	result = append(result, right[j:]...)
 	return result
 }
 
-// Função para merge sort paralelo
-func mergeSortParallel(arr []int, nProc int) []int {
-	var wg sync.WaitGroup
+// merge sort sequencial
+func mergeSortSeq(arr []int) []int {
+	if len(arr) <= 1 {
+		return arr
+	}
 
-	// Dividir o arr em nProc partes
-	chunkSize := len(arr) / nProc
-	chunks := make([][]int, nProc)
+	mid := len(arr) / 2
+	left := mergeSortSeq(arr[:mid])
+	right := mergeSortSeq(arr[mid:])
+	return merge(left, right)
+}
 
-	for i := 0; i < nProc; i++ {
-		start := i * chunkSize
-		end := start + chunkSize
-		if i == nProc-1 {
-			end = len(arr) // Último pedaço
+// merge sort paralelo
+func mergeSortParallel(arr []int, maxDepth int, currentDepth int) []int {
+	if len(arr) <= 1 {
+		return arr
+	}
+	if currentDepth >= maxDepth {
+		// se atingir a profundidade máxima, executa o merge sort sequencial
+		return mergeSortSeq(arr)
+	}
+
+	mid := len(arr) / 2
+	var leftResult, rightResult []int
+
+	var wg sync.WaitGroup // waitGroup para sincronizar as goroutines
+	wg.Add(2)             // adiciona 2 goroutines ao WaitGroup
+
+	// executa merge sort paralelo na metade esquerda
+	go func() {
+		defer wg.Done() // decrementa o contador do WaitGroup
+		leftResult = mergeSortParallel(arr[:mid], maxDepth, currentDepth+1)
+	}()
+
+	// executa merge sort paralelo na metade direita
+	go func() {
+		defer wg.Done()
+		rightResult = mergeSortParallel(arr[mid:], maxDepth, currentDepth+1)
+	}()
+
+	wg.Wait() // espera as duas goroutines terminarem
+
+	return merge(leftResult, rightResult)
+}
+
+// calculo de speedup
+// retorna o tempo sequencial, o tempo paralelo e o speedup representados em float64
+func benchmark(vectorSize int, maxDepth int) (float64, float64, float64) {
+	arr := make([]int, vectorSize)
+	for i := range arr {
+		arr[i] = rand.Intn(1_000_000)
+	}
+
+	// execução sequencial
+	startSeq := time.Now()
+	mergeSortSeq(arr)
+	timeSeq := time.Since(startSeq).Seconds()
+
+	// execução paralela
+	startPar := time.Now()
+	mergeSortParallel(arr, maxDepth, 0)
+	timePar := time.Since(startPar).Seconds()
+
+	// calculo de speedup
+	speedup := timeSeq / timePar
+	return timeSeq, timePar, speedup
+}
+
+// avaliação de desempenho com diferentes tamanhos de vetor e número de processadores
+func evaluate() {
+	vectorSizes := []int{1_000, 10_000, 100_000, 1_000_000, 10_000_000} // granularidade
+	numProcessors := []int{2, 4, 6, 8, 10, 12}                   // num de processadores
+
+	for _, size := range vectorSizes {
+		fmt.Printf("Vector Size: %d\n", size)
+		for _, procs := range numProcessors {
+			runtime.GOMAXPROCS(procs)
+			fmt.Printf("  Processors: %d\n", procs)
+
+			// profundidade máxima para o merge sort paralelo
+			// isso é feito para evitar muitas goroutines e o paralelo não ser eficiente
+			maxDepth := procs * 2
+
+			timeSeq, timePar, speedup := benchmark(size, maxDepth)
+			fmt.Printf("    Sequential Time: %.2fs, Parallel Time: %.2fs, Speedup: %.2f\n",
+				timeSeq, timePar, speedup)
 		}
-		chunks[i] = arr[start:end]
 	}
-
-	// Executar o merge sort em paralelo
-	for i := 0; i < nProc; i++ {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			chunks[i] = mergeSort(chunks[i])
-		}(i)
-	}
-
-	wg.Wait()
-
-	// Mesclar as partes ordenadas
-	for len(chunks) > 1 {
-		var temp [][]int
-		for i := 0; i < len(chunks); i += 2 {
-			if i+1 < len(chunks) {
-				temp = append(temp, merge(chunks[i], chunks[i+1]))
-			} else {
-				temp = append(temp, chunks[i])
-			}
-		}
-		chunks = temp
-	}
-
-	return chunks[0]
 }
 
 func main() {
-	// Exemplo de tamanhos de vetores
-	sizes := []int{1000, 10000, 100000, 1000000, 10000000}
-
-	for _, size := range sizes {
-		// Gerar vetor aleatório
-		arr := make([]int, size)
-		for i := 0; i < size; i++ {
-			arr[i] = rand.Intn(10000)
-		}
-
-		// Rodar o merge sort sequencial para calcular o tempo de referência
-		var sequentialTime time.Duration
-		iterations := 5
-		for i := 0; i < iterations; i++ {
-			start := time.Now()
-			_ = mergeSort(arr)
-			sequentialTime += time.Since(start)
-		}
-		sequentialTime /= time.Duration(iterations) // Média do tempo sequencial
-
-		// Testar para diferentes números de processadores
-		processors := []int{2, 4, 6, 8, 10, 12} // Processadores desejados
-			for _, nProc := range processors {
-    		var parallelTime time.Duration
-    			for i := 0; i < iterations; i++ {
-        			start := time.Now()
-        		_ = mergeSortParallel(arr, nProc)
-        		parallelTime += time.Since(start)
-    			}
-    		parallelTime /= time.Duration(iterations) // Média do tempo paralelo
-
-    	// Verificar se o tempo paralelo não é muito pequeno
-    	if parallelTime > 0 {
-     		speedup := float64(sequentialTime) / float64(parallelTime)
-        	// Printar os resultados
-        	fmt.Printf("Tamanho: %d, Processadores: %d, Speedup: %.2f\n", size, nProc, speedup)
-    	} else {
-        	// Caso não tenha ocorrido paralelização eficaz, exibir uma mensagem
-        	fmt.Printf("Tamanho: %d, Processadores: %d, Speedup: Não calculado\n", size, nProc)
-    }
-}
-	}
+	evaluate()
 }
